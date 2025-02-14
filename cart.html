@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRO-C - Cart</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="loadHeaderFooter.js" defer></script>
+  <style>
+    
+    /* Previous styles remain the same until cart section */
+
+    .cart-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto auto;
+      gap: 24px;
+      background-color: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 24px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .cart-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .cart-item img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .cart-item-details {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .cart-item h4 {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .estimated-delivery {
+      font-size: 0.875rem;
+      color: #64748b;
+    }
+
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .quantity-controls button {
+      width: 32px;
+      height: 32px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      background-color: #ffffff;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .quantity-controls button:hover {
+      background-color: #f8fafc;
+    }
+
+    .quantity-display {
+      font-weight: 600;
+      min-width: 40px;
+      text-align: center;
+    }
+
+    .price {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: #16a34a;
+    }
+
+    .remove-button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      background-color: #fee2e2;
+      color: #ef4444;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .remove-button:hover {
+      background-color: #fecaca;
+    }
+
+    .cart-summary {
+      margin-top: 32px;
+      background-color: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .cart-actions {
+      display: flex;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .continue-shopping {
+      padding: 12px 24px;
+      background-color: #ffffff;
+      border: 2px solid #16a34a;
+      color: #16a34a;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .continue-shopping:hover {
+      background-color: #f0fdf4;
+    }
+
+    .checkout-button {
+      padding: 12px 24px;
+      background-color: #16a34a;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .checkout-button:hover {
+      background-color: #15803d;
+    }
+
+    .empty-cart {
+      text-align: center;
+      padding: 48px;
+      background-color: #ffffff;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .empty-cart h4 {
+      font-size: 1.5rem;
+      margin-bottom: 16px;
+    }
+  </style>
+
+  </style>
+</head>
+<body>
+  <!-- Cart Section -->
+  <section class="cart">
+    <div class="container">
+      <h3>Your Cart</h3>
+      <div class="cart-items" id="cartItems"></div>
+      <div class="cart-summary">
+        <h4>Order Summary</h4>
+        <div class="cart-total">
+          <p>Subtotal: $<span id="cartSubtotal">0.00</span></p>
+          <p>Shipping: $<span id="shippingCost">5.99</span></p>
+          <h4>Total: $<span id="cartTotal">0.00</span></h4>
+        </div>
+        <div class="cart-actions">
+          <button class="continue-shopping" onclick="window.location.href='products.html'">
+            Continue Shopping
+          </button>
+          <button class="checkout-button" onclick="checkout()">
+            Proceed to Checkout
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
+
+  <script>
+    const cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
+    const cartItemsContainer = document.getElementById("cartItems");
+    const cartSubtotal = document.getElementById("cartSubtotal");
+    const cartTotal = document.getElementById("cartTotal");
+    const shippingCost = 5.99;
+
+    function updateQuantity(index, delta) {
+      cartItems[index].quantity = Math.max(1, (cartItems[index].quantity || 1) + delta);
+      localStorage.setItem("cartItems", JSON.stringify(cartItems));
+      renderCart();
+    }
+
+    function removeItem(index) {
+      cartItems.splice(index, 1);
+      localStorage.setItem("cartItems", JSON.stringify(cartItems));
+      renderCart();
+    }
+
+    function calculateDeliveryDate() {
+      const deliveryDate = new Date();
+      deliveryDate.setDate(deliveryDate.getDate() + 3);
+      return deliveryDate.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    }
+
+    function renderCart() {
+      if (cartItems.length === 0) {
+        cartItemsContainer.innerHTML = `
+          <div class="empty-cart">
+            <h4>Your cart is empty</h4>
+            <button class="continue-shopping" onclick="window.location.href='products.html'">
+              Start Shopping
+            </button>
+          </div>
+        `;
+        cartSubtotal.textContent = "0.00";
+        cartTotal.textContent = "0.00";
+        return;
+      }
+
+      cartItemsContainer.innerHTML = "";
+      let subtotal = 0;
+
+      cartItems.forEach((item, index) => {
+        const quantity = item.quantity || 1;
+        const itemTotal = item.price * quantity;
+        subtotal += itemTotal;
+
+        const cartItem = document.createElement("div");
+        cartItem.className = "cart-item";
+        cartItem.innerHTML = `
+          <img src="${item.image}" alt="${item.name}" />
+          <div class="cart-item-details">
+            <h4>${item.name}</h4>
+            <p class="estimated-delivery">Estimated delivery: ${calculateDeliveryDate()}</p>
+          </div>
+          <div class="quantity-controls">
+            <button onclick="updateQuantity(${index}, -1)">-</button>
+            <span class="quantity-display">${quantity}</span>
+            <button onclick="updateQuantity(${index}, 1)">+</button>
+          </div>
+          <p class="price">$${itemTotal.toFixed(2)}</p>
+          <button class="remove-button" onclick="removeItem(${index})">
+            Remove
+          </button>
+        `;
+        cartItemsContainer.appendChild(cartItem);
+      });
+
+      cartSubtotal.textContent = subtotal.toFixed(2);
+      cartTotal.textContent = (subtotal + shippingCost).toFixed(2);
+    }
+
+    function checkout() {
+      if (cartItems.length === 0) {
+        alert("Your cart is empty!");
+        return;
+      }
+      localStorage.removeItem("cartItems");
+      alert("Thank you for your purchase!");
+      window.location.href = "index.html";
+    }
+
+    renderCart();
+  </script>
+</body>
+</html>
