@@ -7,7 +7,7 @@
 <p align="center">
 <img src="https://img.shields.io/badge/status-active-brightgreen" alt="Status">
 <img src="https://img.shields.io/badge/Made%20with-Love-red" alt="Made with Love">
-<img src="https://img.shields.io/github/license/yourusername/groc" alt="License">
+<img src="https://img.shields.io/github/license/Adithymaurya/groc" alt="License">
 </p>
 
 ---
